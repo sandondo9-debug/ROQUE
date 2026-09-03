@@ -324,49 +324,6 @@
         .badge-area { background: #1c2d3d; color: #60a5fa; }
         .badge-sim { background: #4a3306; color: #fbbf24; }
 
-        .mic-btn {
-            background: var(--accent-green-bright);
-            border: none;
-            color: #0a0d10;
-            border-radius: 8px;
-            width: 46px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-        .mic-btn.recording {
-            background: #b91c1c;
-            animation: latido 1.1s ease-in-out infinite;
-        }
-
-        /* ---- SELECTOR REPORTAR / PREGUNTAR (para el botón único de voz) ---- */
-        .voz-modo-toggle {
-            display: none;
-            gap: 4px;
-            background: #121417;
-            border: 1px solid #2a2f38;
-            border-radius: 20px;
-            padding: 3px;
-            margin-bottom: 10px;
-            pointer-events: auto;
-        }
-        .modo-btn {
-            border: none;
-            background: transparent;
-            color: var(--text-muted);
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 6px 14px;
-            border-radius: 16px;
-            cursor: pointer;
-        }
-        .modo-btn.active {
-            background: var(--accent-green-bright);
-            color: #0a0d10;
-        }
-
         /* ---- PANTALLA DE LOGIN ---- */
         #loginScreen {
             width: 100%;
@@ -484,10 +441,6 @@
     <div class="content-area" id="contentArea"></div>
 
     <div class="footer-controls">
-        <div class="voz-modo-toggle" id="vozModoToggle">
-            <button type="button" class="modo-btn active" data-modo="reporte" onclick="setModoVoz('reporte')">Reportar</button>
-            <button type="button" class="modo-btn" data-modo="pregunta" onclick="setModoVoz('pregunta')">Preguntar</button>
-        </div>
         <div class="roque-btn-wrapper">
             <div class="lock-indicator" id="lockIndicator">
                 <span class="lock-text">↑ Deslizá para bloquear</span>
@@ -657,7 +610,6 @@
         await supabaseClient.auth.signOut();
         usuarioActual = null;
         sessionStorage.removeItem('roque_perfil');
-        setModoVoz('reporte');
         document.getElementById('appContainer').style.display = 'none';
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('loginEmail').value = '';
@@ -670,7 +622,6 @@
 
         document.getElementById('userTag').innerHTML = usuarioActual.nombre;
 
-        actualizarSelectorModo();
         renderShell();
     }
 
@@ -791,6 +742,7 @@
             const respuesta = await simularRespuestaRoque(pregunta);
             cajaRespuesta.className = 'status-msg status-ok';
             cajaRespuesta.textContent = respuesta;
+            hablarTexto(respuesta);
             return;
         }
 
@@ -809,8 +761,20 @@
             return;
         }
 
+        const respuestaFinal = data.respuesta || 'Roque no devolvió respuesta.';
         cajaRespuesta.className = 'status-msg status-ok';
-        cajaRespuesta.textContent = data.respuesta || 'Roque no devolvió respuesta.';
+        cajaRespuesta.textContent = respuestaFinal;
+        hablarTexto(respuestaFinal);
+    }
+
+    // Lee en voz alta la respuesta de Roque (además de mostrarla en el cuadro de texto).
+    function hablarTexto(texto) {
+        if (!('speechSynthesis' in window)) return;
+        const textoLimpio = texto.replace(/^\[Simulado\]\s*/, '');
+        window.speechSynthesis.cancel(); // corta cualquier lectura anterior antes de empezar la nueva
+        const utterance = new SpeechSynthesisUtterance(textoLimpio);
+        utterance.lang = 'es-ES';
+        window.speechSynthesis.speak(utterance);
     }
 
     function mostrarEstado(texto, tipo) {
@@ -943,37 +907,36 @@
                 document.getElementById('btnHint').innerText = "No detecté nada. Mantené presionado y hablá.";
                 return;
             }
-            if (modoVoz === 'pregunta') {
-                if (!document.getElementById('preguntaRoque')) renderShell();
-                document.getElementById('preguntaRoque').value = texto;
-                await preguntarARoque();
-            } else {
+            if (usuarioActual.rol === 'operativo') {
+                // Operativo: el botón solo transcribe y reporta, siempre.
                 await guardarMensaje(texto);
+            } else {
+                // Supervisión/Dirección: le "habla" a Roque, y Roque decide si es
+                // un reporte para anotar o una pregunta para contestar.
+                await hablarConRoque(texto);
             }
             ultimaTranscripcion = '';
         };
     }
 
-    // ---- SELECTOR REPORTAR / PREGUNTAR (mismo botón para las dos cosas) ----
-    // Operativo no ve el selector: siempre reporta. Supervisión/Dirección eligen
-    // el modo antes de hablar, y el botón grande de siempre hace una cosa u otra.
-    let modoVoz = 'reporte';
-
-    function setModoVoz(modo) {
-        modoVoz = modo;
-        document.querySelectorAll('.modo-btn').forEach(b => {
-            b.classList.toggle('active', b.dataset.modo === modo);
-        });
+    // ---- ROQUE DECIDE: ¿esto es un reporte para anotar, o una pregunta para contestar? ----
+    // Solo se usa para Supervisión/Dirección, que hablan con Roque en general (no solo reportan).
+    function esPregunta(texto) {
+        const t = texto.toLowerCase().trim();
+        if (t.endsWith('?')) return true;
+        if (/^(qué|que|cómo|como|cuánto|cuanto|cuántos|cuantos|cuál|cual|cuándo|cuando|dónde|donde|por qué|por que)\b/.test(t)) return true;
+        if (/compara|comparad|comparando/.test(t)) return true;
+        return false;
     }
 
-    function actualizarSelectorModo() {
-        const toggle = document.getElementById('vozModoToggle');
-        if (!toggle) return;
-        if (usuarioActual.rol === 'operativo') {
-            toggle.style.display = 'none';
-            modoVoz = 'reporte';
+    async function hablarConRoque(texto) {
+        if (esPregunta(texto)) {
+            if (!document.getElementById('preguntaRoque')) renderShell();
+            document.getElementById('preguntaRoque').value = texto;
+            await preguntarARoque();
+            document.getElementById('btnHint').innerText = "Mantené presionado para hablar";
         } else {
-            toggle.style.display = 'flex';
+            await guardarMensaje(texto);
         }
     }
 
