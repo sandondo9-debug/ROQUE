@@ -99,8 +99,8 @@
         }
 
         header .brand-icon {
-            width: 17.4px;
-            height: 17.4px;
+            width: 18.3px;
+            height: 18.3px;
         }
 
         .user-bar {
@@ -420,9 +420,6 @@
             <div class="brand-icon"></div>
             ROQUE
         </div>
-        <div class="user-bar">
-            <span id="userTag">Cargando...</span>
-        </div>
     </header>
 
     <div class="content-area" id="contentArea"></div>
@@ -606,8 +603,6 @@
     function mostrarAppConPerfilCargado() {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('appContainer').style.display = 'flex';
-
-        document.getElementById('userTag').innerHTML = usuarioActual.nombre;
 
         renderShell();
     }
