@@ -55,8 +55,8 @@
             position: absolute;
             top: 12px;
             left: 14px;
-            width: 9px;
-            height: 9px;
+            width: 9.8px;
+            height: 9.8px;
             border-radius: 50%;
             background: var(--accent-green-bright);
             box-shadow: 0 0 6px rgba(76, 175, 80, 0.8);
@@ -87,11 +87,20 @@
             gap: 8px;
         }
 
+        header .brand {
+            font-size: 1.31rem;
+        }
+
         .brand-icon {
             width: 16px;
             height: 16px;
             background-color: var(--accent-green-bright);
             clip-path: polygon(0% 100%, 0% 0%, 25% 0%, 25% 20%, 50% 20%, 50% 0%, 75% 0%, 75% 20%, 100% 20%, 100% 100%);
+        }
+
+        header .brand-icon {
+            width: 17.4px;
+            height: 17.4px;
         }
 
         .user-bar {
@@ -413,28 +422,6 @@
         </div>
         <div class="user-bar">
             <span id="userTag">Cargando...</span>
-            <div style="display:flex; gap:6px;">
-                <button class="logout-btn" onclick="activarPasskey()" aria-label="Activar Face ID o huella" style="display:flex; align-items:center; justify-content:center; padding:6px;">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
-                        <path d="M14 13.12c0 2.38 0 6.38-1 8.88"/>
-                        <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/>
-                        <path d="M2 12a10 10 0 0 1 18-6"/>
-                        <path d="M2 16h.01"/>
-                        <path d="M21.8 16c.2-2 .131-5.354 0-6"/>
-                        <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/>
-                        <path d="M8.65 22c.21-.66.45-1.32.57-2"/>
-                        <path d="M9 6.8a6 6 0 0 1 9 5.2c0 .47 0 1.17-.02 2"/>
-                    </svg>
-                </button>
-                <button class="logout-btn" onclick="cerrarSesion()" aria-label="Cerrar sesión" style="display:flex; align-items:center; justify-content:center; padding:6px;">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                        <polyline points="16 17 21 12 16 7"/>
-                        <line x1="21" y1="12" x2="9" y2="12"/>
-                    </svg>
-                </button>
-            </div>
         </div>
     </header>
 
@@ -684,16 +671,40 @@
                         <div class="card-value">${subtitulosPorRol[usuarioActual.rol]}</div>
                         <span class="badge badge-allowed">${usuarioActual.nombre}</span>
                     </div>
-                    <button class="reportes-btn" onclick="mostrarPantallaReportes()" aria-label="Ver reportes">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#0a0d10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                            <line x1="16" y1="13" x2="8" y2="13"/>
-                            <line x1="16" y1="17" x2="8" y2="17"/>
-                            <line x1="10" y1="9" x2="8" y2="9"/>
-                        </svg>
-                        Reportes
-                    </button>
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                        <div style="display:flex; gap:6px;">
+                            <button class="logout-btn" onclick="activarPasskey()" aria-label="Activar Face ID o huella" style="display:flex; align-items:center; justify-content:center; padding:6px;">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
+                                    <path d="M14 13.12c0 2.38 0 6.38-1 8.88"/>
+                                    <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/>
+                                    <path d="M2 12a10 10 0 0 1 18-6"/>
+                                    <path d="M2 16h.01"/>
+                                    <path d="M21.8 16c.2-2 .131-5.354 0-6"/>
+                                    <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/>
+                                    <path d="M8.65 22c.21-.66.45-1.32.57-2"/>
+                                    <path d="M9 6.8a6 6 0 0 1 9 5.2c0 .47 0 1.17-.02 2"/>
+                                </svg>
+                            </button>
+                            <button class="logout-btn" onclick="cerrarSesion()" aria-label="Cerrar sesión" style="display:flex; align-items:center; justify-content:center; padding:6px;">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                    <polyline points="16 17 21 12 16 7"/>
+                                    <line x1="21" y1="12" x2="9" y2="12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <button class="reportes-btn" onclick="mostrarPantallaReportes()" aria-label="Ver reportes">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#0a0d10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <line x1="10" y1="9" x2="8" y2="9"/>
+                            </svg>
+                            Reportes
+                        </button>
+                    </div>
                 </div>
             </div>
             ${cajaChat}
