@@ -676,8 +676,20 @@
                             </button>
                         </div>
                     </div>
-                    <div class="panel-row">
-                        <div class="panel-label">${subtitulosPorRol[usuarioActual.rol]}</div>
+                    <div class="panel-row" style="align-items:center;">
+                        <div>
+                            <div class="panel-label">${subtitulosPorRol[usuarioActual.rol]}</div>
+                            ${usuarioActual.rol === 'direccion' ? `
+                            <button class="reportes-btn" onclick="mostrarPantallaNegocio()" aria-label="Datos del negocio" style="margin-top:6px;">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#0a0d10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M3 21h18"/>
+                                    <path d="M5 21V9l7-6 7 6v12"/>
+                                    <path d="M9 21v-6h6v6"/>
+                                </svg>
+                                Datos del negocio
+                            </button>
+                            ` : ''}
+                        </div>
                         <button class="reportes-btn" onclick="mostrarPantallaReportes()" aria-label="Ver reportes">
                             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#0a0d10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -689,11 +701,6 @@
                             Reportes
                         </button>
                     </div>
-                    ${usuarioActual.rol === 'direccion' ? `
-                    <div style="text-align:right;">
-                        <span style="color:var(--accent-green-bright); font-size:0.75rem; cursor:pointer; text-decoration:underline;" onclick="mostrarPantallaNegocio()">Datos del negocio</span>
-                    </div>
-                    ` : ''}
                 </div>
             </div>
             ${cajaChat}
