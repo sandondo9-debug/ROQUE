@@ -647,6 +647,12 @@
     }
 
     // Dibuja la pantalla: Operativo solo envía. Supervisión/Dirección además pueden preguntarle a Roque.
+    // Muestra solo el nombre de pila, sin el puesto/área si viene entre paréntesis
+    // (ej: "Agustina (cocina)" -> "Agustina")
+    function soloNombre(nombreCompleto) {
+        return (nombreCompleto || '').replace(/\s*\(.*?\)\s*/g, '').trim();
+    }
+
     function renderShell() {
 
         const cajaChat = usuarioActual.rol === 'operativo' ? '' : `
@@ -662,9 +668,7 @@
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:flex-end;">
                     <div>
-                        <div class="card-title">${titulosPorRol[usuarioActual.rol]}</div>
-                        <div class="card-value">${subtitulosPorRol[usuarioActual.rol]}</div>
-                        <span class="badge badge-allowed">${usuarioActual.nombre}</span>
+                        <span class="badge badge-allowed" style="font-size:0.77rem;">${soloNombre(usuarioActual.nombre)}</span>
                     </div>
                     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
                         <div style="display:flex; gap:6px;">
