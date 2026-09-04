@@ -175,6 +175,13 @@
             font-weight: 700;
         }
 
+        /* ---- PANEL DE PERFIL (arriba de todo): dos filas alineadas ---- */
+        .panel-header { display: flex; flex-direction: column; gap: 10px; }
+        .panel-row { display: flex; justify-content: space-between; align-items: center; }
+        .panel-label { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; }
+        .panel-nombre { font-size: 1.02rem; font-weight: 800; color: var(--accent-green-bright); letter-spacing: 0.2px; }
+        .panel-icons { display: flex; gap: 6px; }
+
         .card textarea {
             width: 100%;
             background: #121417;
@@ -666,13 +673,10 @@
 
         document.getElementById('contentArea').innerHTML = `
             <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-                    <div>
-                        <div class="card-title">${subtitulosPorRol[usuarioActual.rol]}</div>
-                        <span class="badge badge-allowed" style="font-size:0.85rem;">${soloNombre(usuarioActual.nombre)}</span>
-                    </div>
-                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
-                        <div style="display:flex; gap:6px;">
+                <div class="panel-header">
+                    <div class="panel-row">
+                        <div class="panel-label">${subtitulosPorRol[usuarioActual.rol]}</div>
+                        <div class="panel-icons">
                             <button class="logout-btn" onclick="activarPasskey()" aria-label="Activar Face ID o huella" style="display:flex; align-items:center; justify-content:center; padding:6px;">
                                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
@@ -694,6 +698,9 @@
                                 </svg>
                             </button>
                         </div>
+                    </div>
+                    <div class="panel-row">
+                        <div class="panel-nombre">${soloNombre(usuarioActual.nombre)}</div>
                         <button class="reportes-btn" onclick="mostrarPantallaReportes()" aria-label="Ver reportes">
                             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#0a0d10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
