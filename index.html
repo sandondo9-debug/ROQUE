@@ -394,15 +394,6 @@
     <input type="password" id="loginPassword" placeholder="Contraseña" autocomplete="current-password" aria-label="Contraseña">
     <div id="loginError" role="alert"></div>
     <button onclick="iniciarSesion()">Ingresar</button>
-    <button onclick="iniciarConGoogle()" style="background:#fff; color:#1f1f1f; display:flex; align-items:center; justify-content:center; gap:8px;">
-        <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
-            <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.3-.4-3.5z"/>
-            <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6.1 29.6 4 24 4c-7.6 0-14.2 4.3-17.7 10.7z"/>
-            <path fill="#4CAF50" d="M24 44c5.3 0 10.1-2 13.7-5.3l-6.3-5.3C29.3 35.4 26.8 36 24 36c-5.3 0-9.7-3.1-11.3-7.5l-6.6 5C9.7 39.6 16.3 44 24 44z"/>
-            <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.6l6.3 5.3C40.9 36.5 44 30.9 44 24c0-1.2-.1-2.3-.4-3.5z"/>
-        </svg>
-        Ingresar con Google
-    </button>
     <button onclick="iniciarConPasskey()" style="background:#2a2f38; color:#fff; display:flex; align-items:center; justify-content:center; gap:8px;">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
@@ -549,20 +540,6 @@
         }
 
         await cargarPerfilYArrancar(data.user.id);
-    }
-
-    async function iniciarConGoogle() {
-        const errorBox = document.getElementById('loginError');
-        errorBox.textContent = '';
-        const { error } = await supabaseClient.auth.signInWithOAuth({
-            provider: 'google',
-            options: { redirectTo: window.location.href }
-        });
-        if (error) {
-            console.error('Error iniciando con Google:', error);
-            errorBox.textContent = 'No se pudo iniciar con Google: ' + error.message;
-        }
-        // Si no hubo error, el navegador te lleva a Google y vuelve solo a esta misma página logueado.
     }
 
     async function iniciarConPasskey() {
@@ -712,6 +689,11 @@
                             Reportes
                         </button>
                     </div>
+                    ${usuarioActual.rol === 'direccion' ? `
+                    <div style="text-align:right;">
+                        <span style="color:var(--accent-green-bright); font-size:0.75rem; cursor:pointer; text-decoration:underline;" onclick="mostrarPantallaNegocio()">Datos del negocio</span>
+                    </div>
+                    ` : ''}
                 </div>
             </div>
             ${cajaChat}
@@ -830,6 +812,84 @@
     }
 
     // Pantalla con el historial de reportes, filtrado según el rol
+    // Pantalla de datos del negocio (solo Dirección). Lee y actualiza la fila
+    // de "bares" que ya le corresponde a este usuario (usuarioActual.bar_id).
+    async function mostrarPantallaNegocio() {
+        const campoEstilo = "width:100%; background:#121417; border:1px solid #2a2f38; color:var(--text-main); border-radius:8px; padding:10px; margin-top:8px; font-size:0.9rem;";
+
+        document.getElementById('contentArea').innerHTML = `
+            <div class="card">
+                <button class="enviar-texto-btn" onclick="renderShell()">← Volver</button>
+            </div>
+            <div class="card">
+                <div class="card-title">Datos del negocio</div>
+                <input type="text" id="negNombre" placeholder="Nombre del negocio" style="${campoEstilo}">
+                <input type="text" id="negDireccion" placeholder="Dirección" style="${campoEstilo}">
+                <input type="text" id="negAntiguedad" placeholder="Antigüedad (ej: 5 años) - opcional" style="${campoEstilo}">
+                <input type="text" id="negHorarios" placeholder="Horarios de atención - opcional" style="${campoEstilo}">
+                <input type="text" id="negSitio" placeholder="Sitio web o redes - opcional" style="${campoEstilo}">
+                <button class="enviar-texto-btn" onclick="guardarDatosNegocio()">Guardar</button>
+                <div id="negocioStatus" class="status-msg status-muted" style="margin-top:10px; display:none;"></div>
+            </div>
+        `;
+
+        const { data, error } = await supabaseClient
+            .from('bares')
+            .select('*')
+            .eq('id', usuarioActual.bar_id)
+            .single();
+
+        if (error) {
+            console.error('Error cargando datos del negocio:', error);
+            const statusBox = document.getElementById('negocioStatus');
+            statusBox.style.display = 'block';
+            statusBox.className = 'status-msg status-error';
+            statusBox.textContent = '✕ No se pudo cargar el negocio: ' + error.message;
+            return;
+        }
+
+        document.getElementById('negNombre').value = data.nombre || '';
+        document.getElementById('negDireccion').value = data.direccion || '';
+        document.getElementById('negAntiguedad').value = data.antiguedad || '';
+        document.getElementById('negHorarios').value = data.horarios || '';
+        document.getElementById('negSitio').value = data.sitio_web || '';
+    }
+
+    async function guardarDatosNegocio() {
+        const statusBox = document.getElementById('negocioStatus');
+        const nombre = document.getElementById('negNombre').value.trim();
+        const direccion = document.getElementById('negDireccion').value.trim();
+
+        if (!nombre || !direccion) {
+            statusBox.style.display = 'block';
+            statusBox.className = 'status-msg status-error';
+            statusBox.textContent = 'Nombre y dirección son obligatorios.';
+            return;
+        }
+
+        const { error } = await supabaseClient
+            .from('bares')
+            .update({
+                nombre: nombre,
+                direccion: direccion,
+                antiguedad: document.getElementById('negAntiguedad').value.trim() || null,
+                horarios: document.getElementById('negHorarios').value.trim() || null,
+                sitio_web: document.getElementById('negSitio').value.trim() || null,
+            })
+            .eq('id', usuarioActual.bar_id);
+
+        statusBox.style.display = 'block';
+        if (error) {
+            console.error('Error guardando datos del negocio:', error);
+            statusBox.className = 'status-msg status-error';
+            statusBox.textContent = '✕ No se pudo guardar: ' + error.message;
+            return;
+        }
+
+        statusBox.className = 'status-msg status-ok';
+        statusBox.textContent = '✓ Datos guardados';
+    }
+
     async function mostrarPantallaReportes() {
         document.getElementById('contentArea').innerHTML = `
             <div class="card">
