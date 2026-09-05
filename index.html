@@ -470,55 +470,74 @@
     });
 
     // ---- MODO SIMULACIÓN ----
-    // En true: "Preguntale a Roque" contesta con datos de ejemplo, sin gastar IA paga.
-    // El resto de la app (reportes, fotos, voz) sigue siendo real, porque eso no cuesta IA.
+    // En true: "Preguntale a Roque" busca la respuesta en los reportes reales
+    // ya cargados (leer datos de Supabase es gratis), sin llamar a ninguna IA paga.
     // Poné esto en false solo cuando quieras probar la IA real (consume créditos).
     const MODO_SIMULACION = true;
 
-    const RESPUESTAS_SIMULADAS = {
-        ventas: [
-            'Esta noche vendiste un 12% más que el mismo día de la semana pasada. El pico fue entre las 21:30 y las 23:00.',
-            'Comparado con la semana pasada, las ventas vienen 8% por debajo. Los tragos son lo que más cayó.'
-        ],
-        stock: [
-            'Según los últimos reportes, se está por terminar el hielo y el limón. Te recomiendo reponer antes del fin de semana.',
-            'No hay reportes de faltantes en las últimas 24hs. Stock estable en las áreas que reportaron.'
-        ],
-        personal: [
-            'Los mozos reportaron un total de 14 mensajes esta noche, la mayoría sobre pedidos de mesa. Ningún incidente grave.',
-            'Cocina marcó dos demoras por falta de un insumo. Fuera de eso, el turno vino tranquilo.'
-        ],
-        quejas: [
-            'Se registraron 2 quejas de clientes esta semana, ambas por demora en el pedido. Ninguna por calidad de producto.',
-            'No hay quejas reportadas en los últimos reportes cargados.'
-        ],
-        comparar: [
-            'Comparando con la semana anterior: +5% en reportes de venta, -10% en incidentes de cocina. Buena tendencia general.',
-            'Este mes viene 15% arriba del anterior en actividad reportada, con menos quejas de clientes.'
-        ],
-        default: [
-            'Con los reportes cargados hasta ahora, todo viene dentro de lo normal para un local de este tamaño.',
-            'No tengo suficientes reportes todavía para darte un dato preciso sobre eso — a medida que el equipo reporte más, la respuesta va a ser más ajustada.',
-            'Buena pregunta. Con la información disponible por ahora, no veo nada fuera de lo común que reportar.'
-        ]
-    };
-
-    function elegirCategoria(pregunta) {
-        const texto = pregunta.toLowerCase();
-        if (/venta|factura|caja|ingreso/.test(texto)) return 'ventas';
-        if (/stock|falta|insumo|hielo|limón|carne|repone/.test(texto)) return 'stock';
-        if (/mozo|cocina|limpieza|personal|equipo|turno/.test(texto)) return 'personal';
-        if (/queja|reclamo|cliente/.test(texto)) return 'quejas';
-        if (/compar|semana pasada|mes pasado|antes/.test(texto)) return 'comparar';
-        return 'default';
+    function normalizar(texto) {
+        return (texto || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
 
-    // Simula el tiempo de "pensar" de una IA real, para que la demo se sienta natural.
-    function simularRespuestaRoque(pregunta) {
-        const opciones = RESPUESTAS_SIMULADAS[elegirCategoria(pregunta)];
-        const respuesta = opciones[Math.floor(Math.random() * opciones.length)];
-        const demora = 700 + Math.random() * 900;
-        return new Promise((resolve) => setTimeout(() => resolve('[Simulado] ' + respuesta), demora));
+    const PALABRAS_IGNORADAS = new Set([
+        'que','como','cual','cuales','esta','estan','estamos','hay','de','la','el','los','las','un','una',
+        'y','o','en','del','para','por','con','se','nos','me','te','le','les','al','es','son','fue','fueron',
+        'ha','han','va','van','este','estos','estas','sobre','desde','hasta','mas','menos','hoy','ayer',
+        'semana','mes','ultimos','ultimas','ultimo','ultima','pasada','pasado','comparado','comparada','roque','nuestro','nuestra'
+    ]);
+
+    function palabrasClave(pregunta) {
+        return normalizar(pregunta)
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .split(/\s+/)
+            .filter(p => p.length > 3 && !PALABRAS_IGNORADAS.has(p));
+    }
+
+    // Busca en los reportes reales del bar (últimos 7 días) algo relacionado con
+    // la pregunta. Sin IA: es búsqueda por palabras clave sobre datos reales.
+    async function simularRespuestaRoque(pregunta) {
+        const desde = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+        const { data: reportes, error } = await supabaseClient
+            .from('reportes')
+            .select('usuario, area, rol, mensaje, creado_en')
+            .eq('bar_id', usuarioActual.bar_id)
+            .in('rol', rolesPermitidos())
+            .gte('creado_en', desde)
+            .order('creado_en', { ascending: false })
+            .limit(200);
+
+        if (error) {
+            return '[Simulado] No pude leer los reportes ahora mismo (' + error.message + ').';
+        }
+
+        if (!reportes || reportes.length === 0) {
+            return '[Simulado] Todavía no hay reportes cargados en los últimos 7 días.';
+        }
+
+        const claves = palabrasClave(pregunta);
+        const coincidencias = claves.length
+            ? reportes.filter(r => claves.some(c => normalizar(r.mensaje).includes(c)))
+            : [];
+
+        if (coincidencias.length > 0) {
+            const masReciente = coincidencias[0];
+            const fechaReciente = new Date(masReciente.creado_en).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
+            const usuariosUnicos = [...new Set(coincidencias.map(r => r.usuario))];
+            const quienes = usuariosUnicos.length <= 2
+                ? usuariosUnicos.join(' y ')
+                : `${usuariosUnicos.length} personas distintas`;
+
+            if (coincidencias.length === 1) {
+                return `[Simulado] Encontré 1 reporte relacionado con eso esta semana: ${fechaReciente}, ${masReciente.usuario} escribió "${masReciente.mensaje}".`;
+            }
+
+            return `[Simulado] Se reportó esto ${coincidencias.length} veces en los últimos 7 días (avisaron ${quienes}). El más reciente es del ${fechaReciente}: "${masReciente.mensaje}" (${masReciente.usuario}).`;
+        }
+
+        const ultimo = reportes[0];
+        const fechaUltimo = new Date(ultimo.creado_en).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
+        return `[Simulado] No encontré reportes específicos sobre eso. En los últimos 7 días se cargaron ${reportes.length} reportes en total; el más reciente es del ${fechaUltimo} (${ultimo.usuario}).`;
     }
 
     let isTalking = false;
