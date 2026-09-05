@@ -70,7 +70,7 @@
         }
 
         header {
-            padding: 16px;
+            padding: 9px 16px;
             background-color: var(--card-bg);
             border-bottom: 1px solid #2a2f38;
             text-align: center;
@@ -176,7 +176,7 @@
         }
 
         /* ---- PANEL DE PERFIL (arriba de todo): dos filas alineadas ---- */
-        .panel-header { display: flex; flex-direction: column; gap: 8px; }
+        .panel-header { display: flex; flex-direction: column; gap: 6px; }
         .panel-row { display: flex; justify-content: space-between; align-items: center; }
         .panel-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
         .panel-nombre { font-size: 1.15rem; font-weight: 800; color: var(--accent-green-bright); letter-spacing: 0.2px; }
@@ -649,7 +649,7 @@
         `;
 
         document.getElementById('contentArea').innerHTML = `
-            <div class="card" style="padding:11px 14px;">
+            <div class="card" style="padding:9px 14px;">
                 <div class="panel-header">
                     <div class="panel-row">
                         <div class="panel-nombre">${soloNombre(usuarioActual.nombre)}</div>
@@ -676,11 +676,11 @@
                             </button>
                         </div>
                     </div>
-                    <div class="panel-row" style="align-items:center;">
+                    <div class="panel-label">${subtitulosPorRol[usuarioActual.rol]}</div>
+                    <div class="panel-row" style="align-items:center; margin-top:-2px;">
                         <div>
-                            <div class="panel-label">${subtitulosPorRol[usuarioActual.rol]}</div>
                             ${usuarioActual.rol === 'direccion' ? `
-                            <button class="reportes-btn" onclick="mostrarPantallaNegocio()" aria-label="Datos del negocio" style="margin-top:6px; font-size:0.68rem; padding:8px 11px; gap:6px;">
+                            <button class="reportes-btn" onclick="mostrarPantallaNegocio()" aria-label="Datos del negocio" style="font-size:0.68rem; padding:6px 11px; gap:6px;">
                                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#0a0d10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M3 21h18"/>
                                     <path d="M5 21V9l7-6 7 6v12"/>
@@ -690,7 +690,7 @@
                             </button>
                             ` : ''}
                         </div>
-                        <button class="reportes-btn" onclick="mostrarPantallaReportes()" aria-label="Ver reportes" style="font-size:0.68rem; padding:8px 11px; gap:6px;">
+                        <button class="reportes-btn" onclick="mostrarPantallaReportes()" aria-label="Ver reportes" style="font-size:0.68rem; padding:6px 11px; gap:6px;">
                             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#0a0d10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                                 <polyline points="14 2 14 8 20 8"/>
