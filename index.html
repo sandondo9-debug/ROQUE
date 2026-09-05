@@ -136,6 +136,14 @@
             white-space: nowrap;
         }
 
+        .reportes-btn-sm {
+            font-size: 0.68rem;
+            padding: 6px 11px;
+            gap: 6px;
+            height: 26px;
+            box-sizing: border-box;
+        }
+
         .logout-btn {
             background: transparent;
             border: 1px solid #3a4048;
@@ -641,7 +649,7 @@
 
         const cajaChat = usuarioActual.rol === 'operativo' ? '' : `
             <div class="card">
-                <div class="card-title">Preguntale a Roque${MODO_SIMULACION ? ' <span class="badge badge-sim">Simulación</span>' : ''}</div>
+                <div class="card-title">Preguntale a Roque${MODO_SIMULACION ? ' <span class="badge badge-sim" style="margin-top:0; padding:1px 6px; vertical-align:middle;">Simulación</span>' : ''}</div>
                 <textarea id="preguntaRoque" placeholder="Ej: ¿cómo viene la noche comparada con la semana pasada?" aria-label="Pregunta para Roque"></textarea>
                 <button class="enviar-texto-btn" onclick="preguntarARoque()">Preguntar</button>
                 <div id="respuestaRoque" class="status-msg status-muted" style="margin-top:10px; display:none;" role="status"></div>
@@ -649,7 +657,7 @@
         `;
 
         document.getElementById('contentArea').innerHTML = `
-            <div class="card" style="padding:9px 14px;">
+            <div class="card" style="padding:8.5px 14px;">
                 <div class="panel-header">
                     <div class="panel-row">
                         <div class="panel-nombre">${soloNombre(usuarioActual.nombre)}</div>
@@ -680,7 +688,7 @@
                     <div class="panel-row" style="align-items:center; margin-top:-2px;">
                         <div>
                             ${usuarioActual.rol === 'direccion' ? `
-                            <button class="reportes-btn" onclick="mostrarPantallaNegocio()" aria-label="Datos del negocio" style="font-size:0.68rem; padding:6px 11px; gap:6px;">
+                            <button class="reportes-btn reportes-btn-sm" onclick="mostrarPantallaNegocio()" aria-label="Datos del negocio">
                                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#0a0d10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M3 21h18"/>
                                     <path d="M5 21V9l7-6 7 6v12"/>
@@ -690,7 +698,7 @@
                             </button>
                             ` : ''}
                         </div>
-                        <button class="reportes-btn" onclick="mostrarPantallaReportes()" aria-label="Ver reportes" style="font-size:0.68rem; padding:6px 11px; gap:6px;">
+                        <button class="reportes-btn reportes-btn-sm" onclick="mostrarPantallaReportes()" aria-label="Ver reportes">
                             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#0a0d10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                                 <polyline points="14 2 14 8 20 8"/>
@@ -704,7 +712,7 @@
                 </div>
             </div>
             ${cajaChat}
-            <div class="card">
+            <div class="card" style="padding:11px 14px;">
                 <div class="card-title">Reportar por foto</div>
                 <div class="foto-btns">
                     <button class="camera-round-btn" onclick="document.getElementById('inputCamara').click()" aria-label="Sacar foto con la cámara">
