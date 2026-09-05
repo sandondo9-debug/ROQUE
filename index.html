@@ -159,12 +159,12 @@
 
         .content-area {
             flex: 1;
-            padding: 16px;
-            padding-bottom: 160px;
+            padding: 12px 16px;
+            padding-bottom: 145px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 8px;
         }
 
         .card {
@@ -200,7 +200,7 @@
             border-radius: 8px;
             padding: 10px;
             font-size: 0.9rem;
-            min-height: 70px;
+            min-height: 56px;
             resize: vertical;
             margin-top: 8px;
         }
@@ -657,7 +657,7 @@
     function renderShell() {
 
         const cajaChat = usuarioActual.rol === 'operativo' ? '' : `
-            <div class="card">
+            <div class="card" style="padding:11px 14px;">
                 <div class="card-title">Preguntale a Roque${MODO_SIMULACION ? ' <span class="badge badge-sim" style="margin-top:0; padding:1px 6px; vertical-align:middle;">Simulación</span>' : ''}</div>
                 <textarea id="preguntaRoque" placeholder="Ej: ¿cómo viene la noche comparada con la semana pasada?" aria-label="Pregunta para Roque"></textarea>
                 <button class="enviar-texto-btn" onclick="preguntarARoque()">Preguntar</button>
@@ -727,7 +727,7 @@
                 <input type="file" id="inputCamara" accept="image/*" capture="environment" style="display:none;" onchange="subirFoto(event)">
                 <input type="file" id="inputGaleria" accept="image/*" style="display:none;" onchange="subirFoto(event)">
             </div>
-            <div class="card">
+            <div class="card" style="padding:11px 14px;">
                 <div class="card-title">Reportar por texto</div>
                 <textarea id="textoManual" placeholder="Escribí acá lo que querés reportar..." aria-label="Reporte por texto"></textarea>
                 <button class="enviar-texto-btn" onclick="enviarTexto()">Enviar reporte</button>
@@ -736,6 +736,10 @@
                 <div id="statusMsg" class="status-msg" role="status"></div>
             </div>
         `;
+
+        // Supervisión y Dirección: todo tiene que entrar sin scroll ni poder mover la página.
+        // Operativo mantiene scroll por las dudas, tiene menos contenido igual.
+        document.getElementById('contentArea').style.overflowY = usuarioActual.rol === 'operativo' ? 'auto' : 'hidden';
     }
 
     // Le pregunta a Roque de verdad, usando la función de Supabase que llama a la IA
