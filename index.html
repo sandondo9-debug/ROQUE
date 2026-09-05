@@ -144,6 +144,8 @@
             padding: 6px 11px;
             gap: 6px;
             height: 26px;
+            width: 140px;
+            justify-content: center;
             box-sizing: border-box;
         }
 
@@ -190,7 +192,7 @@
         .panel-header { display: flex; flex-direction: column; gap: 6px; }
         .panel-row { display: flex; justify-content: space-between; align-items: center; }
         .panel-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
-        .panel-nombre { font-size: 1.15rem; font-weight: 800; color: var(--accent-green-bright); letter-spacing: 0.2px; }
+        .panel-nombre { font-size: 1.21rem; font-weight: 800; color: var(--accent-green-bright); letter-spacing: 0.2px; }
         .panel-icons { display: flex; gap: 6px; }
 
         .card textarea {
@@ -758,7 +760,6 @@
             const respuesta = await simularRespuestaRoque(pregunta);
             cajaRespuesta.className = 'status-msg status-ok';
             cajaRespuesta.textContent = respuesta;
-            hablarTexto(respuesta);
             return;
         }
 
@@ -780,17 +781,6 @@
         const respuestaFinal = data.respuesta || 'Roque no devolvió respuesta.';
         cajaRespuesta.className = 'status-msg status-ok';
         cajaRespuesta.textContent = respuestaFinal;
-        hablarTexto(respuestaFinal);
-    }
-
-    // Lee en voz alta la respuesta de Roque (además de mostrarla en el cuadro de texto).
-    function hablarTexto(texto) {
-        if (!('speechSynthesis' in window)) return;
-        const textoLimpio = texto.replace(/^\[Simulado\]\s*/, '');
-        window.speechSynthesis.cancel(); // corta cualquier lectura anterior antes de empezar la nueva
-        const utterance = new SpeechSynthesisUtterance(textoLimpio);
-        utterance.lang = 'es-ES';
-        window.speechSynthesis.speak(utterance);
     }
 
     function mostrarEstado(texto, tipo) {
