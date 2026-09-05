@@ -851,6 +851,13 @@
             return;
         }
 
+        if (password.length < 6) {
+            statusBox.style.display = 'block';
+            statusBox.className = 'status-msg status-error';
+            statusBox.textContent = 'La contraseña tiene que tener al menos 6 caracteres.';
+            return;
+        }
+
         statusBox.style.display = 'block';
         statusBox.className = 'status-msg status-muted';
         statusBox.textContent = 'Creando...';
@@ -860,8 +867,13 @@
         });
 
         if (error || data?.error) {
+            let mensaje = data?.error || error.message;
+            try {
+                const cuerpo = await error.context.json();
+                if (cuerpo?.error) mensaje = cuerpo.error;
+            } catch (e) { /* sin cuerpo legible, se usa el mensaje genérico */ }
             statusBox.className = 'status-msg status-error';
-            statusBox.textContent = '✕ ' + (data?.error || error.message);
+            statusBox.textContent = '✕ ' + mensaje;
             return;
         }
 
@@ -879,7 +891,7 @@
         document.getElementById('contentArea').innerHTML = `
             <div class="card">
                 <button class="enviar-texto-btn" onclick="renderShell()">← Volver</button>
-                <button class="enviar-texto-btn" onclick="mostrarPantallaEmpleados()" style="margin-top:8px;">Crear empleados →</button>
+                <button class="enviar-texto-btn" onclick="mostrarPantallaEmpleados()" style="margin-top:8px;">Nuevo Usuario →</button>
             </div>
             <div class="card">
                 <div class="card-title">Datos del negocio</div>
