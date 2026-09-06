@@ -390,6 +390,42 @@
             font-size: 0.8rem;
             min-height: 18px;
         }
+
+        #politicasBox {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+        #politicasBox input[type="checkbox"] {
+            margin-top: 2px;
+            accent-color: var(--accent-green-bright);
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+        #politicasDetalle summary {
+            color: var(--accent-green-bright);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        #politicasDetalle {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            background: #121417;
+            border: 1px solid #2a2f38;
+            border-radius: 8px;
+            padding: 10px;
+            max-height: 140px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -402,9 +438,23 @@
     </div>
     <input type="email" id="loginEmail" placeholder="Email" autocomplete="username" aria-label="Email">
     <input type="password" id="loginPassword" placeholder="Contraseña" autocomplete="current-password" aria-label="Contraseña">
+
+    <details id="politicasDetalle">
+        <summary>Ver políticas de uso y privacidad</summary>
+        <p><strong>Qué datos usa ROQUE:</strong> tu nombre, email y los reportes que cargues (texto, voz transcripta o fotos). Si tu negocio conecta un sistema de POS, también datos de ventas de ese sistema.</p>
+        <p><strong>Para qué se usan:</strong> únicamente para mostrarte esa información dentro de tu propio negocio y para que Roque pueda responder tus preguntas sobre tu propia operación. Nunca se comparten con otros negocios.</p>
+        <p><strong>Con quién se comparte:</strong> con nadie fuera de tu negocio. Si activás las respuestas de Roque con IA real, tu pregunta y los datos relevantes se envían al proveedor de IA únicamente para generar esa respuesta.</p>
+        <p><strong>Huella/Face ID:</strong> queda guardada en tu propio dispositivo, ROQUE nunca accede a ese dato.</p>
+        <p><strong>Tus derechos:</strong> podés pedirle al administrador de tu negocio que corrija o elimine tus datos cuando quieras.</p>
+    </details>
+    <div id="politicasBox">
+        <input type="checkbox" id="aceptoPoliticas" onchange="actualizarBotonesLogin()">
+        <label for="aceptoPoliticas">Acepto las políticas de uso y privacidad</label>
+    </div>
+
     <div id="loginError" role="alert"></div>
-    <button onclick="iniciarSesion()">Ingresar</button>
-    <button onclick="iniciarConPasskey()" style="background:#2a2f38; color:#fff; display:flex; align-items:center; justify-content:center; gap:8px;">
+    <button id="btnIngresar" onclick="iniciarSesion()" disabled>Ingresar</button>
+    <button id="btnPasskey" onclick="iniciarConPasskey()" disabled style="background:#2a2f38; color:#fff; display:flex; align-items:center; justify-content:center; gap:8px;">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
             <path d="M14 13.12c0 2.38 0 6.38-1 8.88"/>
@@ -559,6 +609,13 @@
     };
 
     // ---- LOGIN ----
+    // Habilita Ingresar/Huella solo si se tildó el checkbox de políticas
+    function actualizarBotonesLogin() {
+        const aceptado = document.getElementById('aceptoPoliticas').checked;
+        document.getElementById('btnIngresar').disabled = !aceptado;
+        document.getElementById('btnPasskey').disabled = !aceptado;
+    }
+
     async function iniciarSesion() {
         const email = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value;
@@ -621,6 +678,8 @@
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('loginEmail').value = '';
         document.getElementById('loginPassword').value = '';
+        document.getElementById('aceptoPoliticas').checked = false;
+        actualizarBotonesLogin();
     }
 
     function mostrarAppConPerfilCargado() {
