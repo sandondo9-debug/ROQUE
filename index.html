@@ -363,7 +363,8 @@
             gap: 14px;
         }
 
-        #loginScreen .brand { margin-bottom: 30px; }
+        #loginScreen .brand { margin-bottom: 30px; font-size: 1.296rem; }
+        #loginScreen .brand-icon { width: 17.6px; height: 17.6px; }
 
         #loginScreen input {
             background: #121417;
@@ -406,22 +407,6 @@
             height: 16px;
             flex-shrink: 0;
         }
-        #politicasDetalle summary {
-            color: var(--accent-green-bright);
-            cursor: pointer;
-            text-decoration: underline;
-        }
-        #politicasDetalle {
-            font-size: 0.72rem;
-            color: var(--text-muted);
-            background: #121417;
-            border: 1px solid #2a2f38;
-            border-radius: 8px;
-            padding: 10px;
-            max-height: 140px;
-            overflow-y: auto;
-            line-height: 1.5;
-        }
         button:disabled {
             opacity: 0.4;
             cursor: not-allowed;
@@ -439,17 +424,16 @@
     <input type="email" id="loginEmail" placeholder="Email" autocomplete="username" aria-label="Email">
     <input type="password" id="loginPassword" placeholder="Contraseña" autocomplete="current-password" aria-label="Contraseña">
 
-    <details id="politicasDetalle">
-        <summary>Ver políticas de uso y privacidad</summary>
+    <div id="politicasTexto" style="display:none; font-size:0.72rem; color:var(--text-muted); background:#121417; border:1px solid #2a2f38; border-radius:8px; padding:10px; max-height:140px; overflow-y:auto; line-height:1.5;">
         <p><strong>Qué datos usa ROQUE:</strong> tu nombre, email y los reportes que cargues (texto, voz transcripta o fotos). Si tu negocio conecta un sistema de POS, también datos de ventas de ese sistema.</p>
         <p><strong>Para qué se usan:</strong> únicamente para mostrarte esa información dentro de tu propio negocio y para que Roque pueda responder tus preguntas sobre tu propia operación. Nunca se comparten con otros negocios.</p>
         <p><strong>Con quién se comparte:</strong> con nadie fuera de tu negocio. Si activás las respuestas de Roque con IA real, tu pregunta y los datos relevantes se envían al proveedor de IA únicamente para generar esa respuesta.</p>
         <p><strong>Huella/Face ID:</strong> queda guardada en tu propio dispositivo, ROQUE nunca accede a ese dato.</p>
         <p><strong>Tus derechos:</strong> podés pedirle al administrador de tu negocio que corrija o elimine tus datos cuando quieras.</p>
-    </details>
+    </div>
     <div id="politicasBox">
         <input type="checkbox" id="aceptoPoliticas" onchange="actualizarBotonesLogin()">
-        <label for="aceptoPoliticas">Acepto las políticas de uso y privacidad</label>
+        <label for="aceptoPoliticas">Estoy de acuerdo con las <span onclick="togglePoliticas(event)" style="color:var(--accent-green-bright); text-decoration:underline; cursor:pointer;">políticas de uso y privacidad</span>.</label>
     </div>
 
     <div id="loginError" role="alert"></div>
@@ -609,6 +593,13 @@
     };
 
     // ---- LOGIN ----
+    // Muestra/oculta el texto de políticas al tocar el link, sin tildar el checkbox de paso
+    function togglePoliticas(event) {
+        event.preventDefault();
+        const texto = document.getElementById('politicasTexto');
+        texto.style.display = texto.style.display === 'none' ? 'block' : 'none';
+    }
+
     // Habilita Ingresar/Huella solo si se tildó el checkbox de políticas
     function actualizarBotonesLogin() {
         const aceptado = document.getElementById('aceptoPoliticas').checked;
