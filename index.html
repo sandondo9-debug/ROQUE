@@ -521,18 +521,21 @@
             : [];
 
         if (coincidencias.length > 0) {
-            const masReciente = coincidencias[0];
-            const fechaReciente = new Date(masReciente.creado_en).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
             const usuariosUnicos = [...new Set(coincidencias.map(r => r.usuario))];
             const quienes = usuariosUnicos.length <= 2
                 ? usuariosUnicos.join(' y ')
                 : `${usuariosUnicos.length} personas distintas`;
 
+            const destacados = coincidencias.slice(0, 2).map(r => {
+                const f = new Date(r.creado_en).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
+                return `${f} (${r.usuario}): "${r.mensaje}"`;
+            }).join('  ·  ');
+
             if (coincidencias.length === 1) {
-                return `[Simulado] Encontré 1 reporte relacionado con eso esta semana: ${fechaReciente}, ${masReciente.usuario} escribió "${masReciente.mensaje}".`;
+                return `[Simulado] Encontré 1 reporte relacionado con eso esta semana: ${destacados}.`;
             }
 
-            return `[Simulado] Se reportó esto ${coincidencias.length} veces en los últimos 7 días (avisaron ${quienes}). El más reciente es del ${fechaReciente}: "${masReciente.mensaje}" (${masReciente.usuario}).`;
+            return `[Simulado] Se reportó esto ${coincidencias.length} veces en los últimos 7 días (avisaron ${quienes}). Estos son los últimos: ${destacados}.`;
         }
 
         const ultimo = reportes[0];
@@ -838,6 +841,7 @@
     // de "bares" que ya le corresponde a este usuario (usuarioActual.bar_id).
     // Pantalla para que Dirección cree empleados (mozo/cocina/encargado)
     function mostrarPantallaEmpleados() {
+        document.getElementById('contentArea').style.overflowY = 'auto';
         const campoEstilo = "width:100%; background:#121417; border:1px solid #2a2f38; color:var(--text-main); border-radius:8px; padding:10px; margin-top:8px; font-size:0.9rem;";
         document.getElementById('contentArea').innerHTML = `
             <div class="card">
@@ -916,6 +920,7 @@
     }
 
     async function mostrarPantallaNegocio() {
+        document.getElementById('contentArea').style.overflowY = 'auto';
         const campoEstilo = "width:100%; background:#121417; border:1px solid #2a2f38; color:var(--text-main); border-radius:8px; padding:10px; margin-top:8px; font-size:0.9rem;";
 
         document.getElementById('contentArea').innerHTML = `
@@ -993,6 +998,7 @@
     }
 
     async function mostrarPantallaReportes() {
+        document.getElementById('contentArea').style.overflowY = 'auto';
         document.getElementById('contentArea').innerHTML = `
             <div class="card">
                 <button class="enviar-texto-btn" onclick="renderShell()">← Volver</button>
