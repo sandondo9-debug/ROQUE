@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>ROQUE - Gestión Inteligente</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="theme-color" content="#121417">
     <style>
         :root {
             --bg-color: #121417;
@@ -97,8 +101,9 @@
         .brand-icon {
             width: 16px;
             height: 16px;
-            background-color: var(--accent-green-bright);
-            clip-path: polygon(0% 100%, 0% 0%, 25% 0%, 25% 20%, 50% 20%, 50% 0%, 75% 0%, 75% 20%, 100% 20%, 100% 100%);
+            border-radius: 3px;
+            object-fit: cover;
+            display: block;
         }
 
         header .brand-icon {
@@ -428,7 +433,7 @@
 <!-- ---- PANTALLA DE LOGIN ---- -->
 <div id="loginScreen">
     <div class="brand">
-        <div class="brand-icon"></div>
+        <img src="icon-192.png" alt="" class="brand-icon">
         ROQUE
     </div>
     <input type="email" id="loginEmail" placeholder="Email" autocomplete="username" aria-label="Email">
@@ -471,7 +476,7 @@
     <div class="status-light" title="ROQUE operativo"></div>
     <header>
         <div class="brand">
-            <div class="brand-icon"></div>
+            <img src="icon-192.png" alt="" class="brand-icon">
             ROQUE
         </div>
         <button class="logout-btn" onclick="cerrarSesion()" aria-label="Cerrar sesión" style="position:absolute; right:16px; top:50%; transform:translateY(-50%); display:flex; align-items:center; justify-content:center; padding:6px;">
