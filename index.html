@@ -929,6 +929,51 @@
     // Pantalla de datos del negocio (solo Dirección). Lee y actualiza la fila
     // de "bares" que ya le corresponde a este usuario (usuarioActual.bar_id).
     // Pantalla para que Dirección cree empleados (mozo/cocina/encargado)
+    // Pantalla con todos los perfiles del bar (solo Dirección), para tener el negocio ordenado
+    async function mostrarPantallaUsuarios() {
+        document.getElementById('contentArea').style.overflowY = 'auto';
+        document.getElementById('contentArea').innerHTML = `
+            <div class="card">
+                <button class="enviar-texto-btn" onclick="mostrarPantallaNegocio()">← Volver</button>
+            </div>
+            <div class="card">
+                <div class="card-title">Usuarios</div>
+                <div id="listaUsuarios"><div class="log-empty">Cargando...</div></div>
+            </div>
+        `;
+
+        const { data, error } = await supabaseClient
+            .from('perfiles')
+            .select('nombre, rol, area')
+            .eq('bar_id', usuarioActual.bar_id)
+            .order('rol', { ascending: true });
+
+        const lista = document.getElementById('listaUsuarios');
+
+        if (error) {
+            lista.innerHTML = `<div class="log-empty">No se pudo cargar: ${error.message}</div>`;
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            lista.innerHTML = `<div class="log-empty">No hay usuarios cargados todavía.</div>`;
+            return;
+        }
+
+        const NOMBRES_ROL = { operativo: 'Operativo', supervision: 'Supervisión', direccion: 'Dirección' };
+
+        const conteo = `<div class="card-value" style="margin-bottom:10px;">${data.length} usuario${data.length === 1 ? '' : 's'} registrado${data.length === 1 ? '' : 's'}</div>`;
+
+        const filas = data.map(u => `
+            <div class="log-item">
+                <span class="log-user">${soloNombre(u.nombre)}</span>
+                <span class="status-muted"> · ${NOMBRES_ROL[u.rol] || u.rol}${u.area ? ' · ' + u.area : ''}</span>
+            </div>
+        `).join('');
+
+        lista.innerHTML = conteo + filas;
+    }
+
     function mostrarPantallaEmpleados() {
         document.getElementById('contentArea').style.overflowY = 'auto';
         const campoEstilo = "width:100%; background:#121417; border:1px solid #2a2f38; color:var(--text-main); border-radius:8px; padding:10px; margin-top:8px; font-size:0.9rem;";
@@ -1016,6 +1061,7 @@
             <div class="card">
                 <button class="enviar-texto-btn" onclick="renderShell()">← Volver</button>
                 <button class="enviar-texto-btn" onclick="mostrarPantallaEmpleados()" style="margin-top:8px;">Nuevo Usuario →</button>
+                <button class="enviar-texto-btn" onclick="mostrarPantallaUsuarios()" style="margin-top:8px;">Usuarios →</button>
             </div>
             <div class="card">
                 <div class="card-title">Datos del negocio</div>
