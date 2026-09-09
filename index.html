@@ -252,7 +252,8 @@
             background: #121417;
             white-space: pre-line;
         }
-        .status-ok { color: #4ade80; }
+        .status-ok { color: #ffffff; }
+        .status-roque { color: #ffffff; }
         .status-error { color: #f87171; }
         .status-muted { color: var(--text-muted); }
 
@@ -597,26 +598,14 @@
 
         function formatearLinea(r) {
             const f = new Date(r.creado_en).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
-            return `${f} ${r.usuario}: "${r.mensaje}"`;
+            return `${f} ${r.usuario}: ${r.mensaje}`;
         }
 
         if (coincidencias.length > 0) {
-            if (coincidencias.length === 1) {
-                return formatearLinea(coincidencias[0]);
-            }
-
-            const usuariosUnicos = [...new Set(coincidencias.map(r => r.usuario))];
-            const quienes = usuariosUnicos.length <= 2
-                ? usuariosUnicos.join(' y ')
-                : `${usuariosUnicos.length} personas distintas`;
-            const destacados = coincidencias.slice(0, 2).map(formatearLinea).join('. ');
-
-            return `Se reportó ${coincidencias.length} veces esta semana (avisaron ${quienes}). ${destacados}.`;
+            return coincidencias.map(formatearLinea).join(' y ');
         }
 
-        const ultimo = reportes[0];
-        const fechaUltimo = new Date(ultimo.creado_en).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
-        return `No encontré nada específico sobre eso. En los últimos 7 días se cargaron ${reportes.length} reportes; el más reciente es del ${fechaUltimo} (${ultimo.usuario}).`;
+        return 'No encontré reportes sobre eso en los últimos 7 días.';
     }
 
     let isTalking = false;
@@ -869,7 +858,7 @@
 
         if (MODO_SIMULACION) {
             const respuesta = await simularRespuestaRoque(pregunta);
-            cajaRespuesta.className = 'status-msg status-ok';
+            cajaRespuesta.className = 'status-msg status-roque';
             cajaRespuesta.textContent = respuesta;
             return;
         }
@@ -890,7 +879,7 @@
         }
 
         const respuestaFinal = data.respuesta || 'Roque no devolvió respuesta.';
-        cajaRespuesta.className = 'status-msg status-ok';
+        cajaRespuesta.className = 'status-msg status-roque';
         cajaRespuesta.textContent = respuestaFinal;
     }
 
