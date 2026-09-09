@@ -12,8 +12,9 @@
         :root {
             --bg-color: #121417;
             --card-bg: #1e2228;
-            --accent-green: #2e7d32;
-            --accent-green-bright: #4caf50;
+            --accent-green: #11443B;
+            --accent-green-bright: #00E5A0;
+            --accent-green-border: #0C7C5E;
             --text-main: #e0e6ed;
             --text-muted: #94a3b8;
             --alert-red: #ef4444;
@@ -63,14 +64,14 @@
             height: 9.8px;
             border-radius: 50%;
             background: var(--accent-green-bright);
-            box-shadow: 0 0 6px rgba(76, 175, 80, 0.8);
+            box-shadow: 0 0 6px rgba(0, 229, 160, 0.8);
             z-index: 10;
             animation: parpadeo 2.6s ease-in-out infinite;
         }
 
         @keyframes parpadeo {
-            0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(76, 175, 80, 0.85); }
-            50% { opacity: 0.3; box-shadow: 0 0 2px rgba(76, 175, 80, 0.3); }
+            0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(0, 229, 160, 0.85); }
+            50% { opacity: 0.3; box-shadow: 0 0 2px rgba(0, 229, 160, 0.3); }
         }
 
         header {
@@ -129,9 +130,9 @@
         .user-bar-actions { display: flex; gap: 6px; }
 
         .reportes-btn {
-            background: var(--accent-green-bright);
-            color: #0a0d10;
-            border: none;
+            background: var(--accent-green);
+            color: var(--accent-green-bright);
+            border: 1px solid var(--accent-green-border);
             font-size: 0.85rem;
             font-weight: 600;
             padding: 10px 14px;
@@ -211,9 +212,9 @@
 
         .card .enviar-texto-btn {
             width: 100%;
-            background: var(--accent-green-bright);
-            color: #0a0d10;
-            border: none;
+            background: var(--accent-green);
+            color: var(--accent-green-bright);
+            border: 1px solid var(--accent-green-border);
             padding: 10px;
             border-radius: 8px;
             font-weight: 700;
@@ -230,9 +231,9 @@
 
         .camera-round-btn, .gallery-btn {
             flex: 1;
-            background: var(--accent-green-bright);
-            color: #0a0d10;
-            border: none;
+            background: var(--accent-green);
+            color: var(--accent-green-bright);
+            border: 1px solid var(--accent-green-border);
             border-radius: 8px;
             padding: 10px;
             cursor: pointer;
@@ -287,9 +288,9 @@
             width: 100px;
             height: 100px;
             border-radius: 50%;
-            background: linear-gradient(145deg, #388e3c, #1b5e20);
+            background: linear-gradient(145deg, #0F6B54, #0A342C);
             border: 4px solid var(--accent-green-bright);
-            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.5);
+            box-shadow: 0 8px 25px rgba(0, 229, 160, 0.5);
             cursor: pointer;
             display: flex;
             justify-content: center;
@@ -390,9 +391,9 @@
         }
 
         #loginScreen button {
-            background: var(--accent-green-bright);
-            color: #0a0d10;
-            border: none;
+            background: var(--accent-green);
+            color: var(--accent-green-bright);
+            border: 1px solid var(--accent-green-border);
             padding: 12px;
             border-radius: 8px;
             font-weight: 700;
