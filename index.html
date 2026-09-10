@@ -464,7 +464,7 @@
         <p><strong>Tus derechos:</strong> podés pedir la corrección o eliminación de tus datos personales al administrador de tu negocio o a ROQUE cuando quieras.</p>
     </div>
     <div id="politicasBox">
-        <input type="checkbox" id="aceptoPoliticas" checked onchange="actualizarBotonesLogin()">
+        <input type="checkbox" id="aceptoPoliticas" onchange="actualizarBotonesLogin()">
         <label for="aceptoPoliticas">Estoy de acuerdo con las <span onclick="togglePoliticas(event)" style="color:var(--accent-green-bright); text-decoration:underline; cursor:pointer;">políticas de uso y privacidad</span>.</label>
     </div>
 
@@ -712,7 +712,7 @@
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('loginEmail').value = '';
         document.getElementById('loginPassword').value = '';
-        document.getElementById('aceptoPoliticas').checked = true;
+        document.getElementById('aceptoPoliticas').checked = false;
         document.getElementById('headerActions').innerHTML = '';
         actualizarBotonesLogin();
     }
@@ -827,11 +827,11 @@
             <div class="card" style="padding:8.5px 14px;">
                 <div class="panel-header">
                     <div class="panel-nombre">${soloNombre(usuarioActual.nombre)}</div>
-                    <div class="panel-icons" style="display:flex; align-items:center; gap:6px;">
+                    <div class="panel-icons" style="display:flex; align-items:center; gap:6px; justify-self:end;">
                         ${fila1Botones}
                     </div>
                     <div class="panel-label">${subtitulosPorRol[usuarioActual.rol]}</div>
-                    ${fila2Botones}
+                    <div style="justify-self:end;">${fila2Botones}</div>
                 </div>
             </div>
             ${cajaChat}
@@ -1572,7 +1572,6 @@
     }
 
     // Arranque: si ya había sesión abierta, entra directo (usando caché si existe). Si no, se queda en el login.
-    actualizarBotonesLogin();
     revisarSesionExistente();
 </script>
 
