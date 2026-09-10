@@ -750,7 +750,8 @@
         await cargarPerfilYArrancar(data.session.user.id);
     }
 
-    // Dibuja la pantalla: Operativo solo envía. Supervisión/Dirección además pueden preguntarle a Roque.
+    // Dibuja la pantalla: los 3 niveles pueden reportar y preguntarle a Roque.
+    // Solo Dirección ve el botón "Reportes" (historial) y "Datos del negocio".
     // Muestra solo el nombre de pila, sin el puesto/área si viene entre paréntesis
     // (ej: "Agustina (cocina)" -> "Agustina")
     function soloNombre(nombreCompleto) {
@@ -759,10 +760,10 @@
 
     function renderShell() {
 
-        const cajaChat = usuarioActual.rol === 'operativo' ? '' : `
+        const cajaChat = `
             <div class="card" style="padding:11px 14px;">
                 <div class="card-title">Preguntale a Roque${MODO_SIMULACION ? ' <span class="badge badge-sim" style="margin-top:0; padding:1px 6px; vertical-align:middle;">Simulación</span>' : ''}</div>
-                <textarea id="preguntaRoque" placeholder="Ej: ¿cómo viene la noche comparada con la semana pasada?" aria-label="Pregunta para Roque"></textarea>
+                <textarea id="preguntaRoque" placeholder="Preguntá algo (ej: ¿hay alguna reserva para hoy?) o contale a Roque lo que querés reportar" aria-label="Pregunta o reporte para Roque"></textarea>
                 <button class="enviar-texto-btn" onclick="preguntarARoque()">Preguntar</button>
                 <div id="respuestaRoque" class="status-msg status-muted" style="margin-top:10px; display:none;" role="status"></div>
             </div>
@@ -773,6 +774,7 @@
                 <div class="panel-header">
                     <div class="panel-nombre">${soloNombre(usuarioActual.nombre)}</div>
                     <div class="panel-icons">
+                        ${usuarioActual.rol === 'direccion' ? `
                         <button class="reportes-btn reportes-btn-sm" onclick="mostrarPantallaReportes()" aria-label="Ver reportes">
                             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -783,6 +785,7 @@
                             </svg>
                             Reportes
                         </button>
+                        ` : ''}
                         <button class="logout-btn" onclick="activarPasskey()" aria-label="Activar Face ID o huella" style="display:flex; align-items:center; justify-content:center; padding:6px; height:26px; box-sizing:border-box;">
                             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
@@ -830,11 +833,13 @@
                 <input type="file" id="inputCamara" accept="image/*" capture="environment" style="display:none;" onchange="subirFoto(event)">
                 <input type="file" id="inputGaleria" accept="image/*" style="display:none;" onchange="subirFoto(event)">
             </div>
+            ${usuarioActual.rol === 'operativo' ? `
             <div class="card" style="padding:11px 14px;">
                 <div class="card-title">Reportar por texto</div>
                 <textarea id="textoManual" placeholder="Escribí acá lo que querés reportar..." aria-label="Reporte por texto"></textarea>
                 <button class="enviar-texto-btn" onclick="enviarTexto()">Enviar reporte</button>
             </div>
+            ` : ''}
             <div class="card" id="statusCard" style="display:none;">
                 <div id="statusMsg" class="status-msg" role="status"></div>
             </div>
@@ -845,11 +850,18 @@
         document.getElementById('contentArea').style.overflowY = usuarioActual.rol === 'operativo' ? 'auto' : 'hidden';
     }
 
-    // Le pregunta a Roque de verdad, usando la función de Supabase que llama a la IA
+    // Le pregunta a Roque de verdad, usando la función de Supabase que llama a la IA.
+    // Si lo que se escribió no es una pregunta, lo guarda como reporte (misma lógica que el botón de voz).
     async function preguntarARoque() {
         const campo = document.getElementById('preguntaRoque');
         const pregunta = campo.value.trim();
         if (!pregunta) return;
+
+        if (!esPregunta(pregunta)) {
+            await guardarMensaje(pregunta);
+            campo.value = '';
+            return;
+        }
 
         const cajaRespuesta = document.getElementById('respuestaRoque');
         cajaRespuesta.style.display = 'block';
@@ -898,9 +910,10 @@
         msg.className = 'status-msg status-' + tipo;
 
         if (tipo === 'ok') {
-            msg.style.cursor = 'pointer';
-            msg.title = 'Tocá para ver los reportes';
-            msg.onclick = mostrarPantallaReportes;
+            const esDireccion = usuarioActual && usuarioActual.rol === 'direccion';
+            msg.style.cursor = esDireccion ? 'pointer' : 'default';
+            msg.title = esDireccion ? 'Tocá para ver los reportes' : '';
+            msg.onclick = esDireccion ? mostrarPantallaReportes : null;
             statusTimeoutId = setTimeout(() => {
                 card.style.display = 'none';
             }, 4000);
@@ -1124,14 +1137,57 @@
         statusBox.textContent = '✓ Datos guardados';
     }
 
+    let reportesCache = [];
+
+    function renderListaReportes() {
+        const rolFiltro = document.getElementById('filtroRol').value;
+        const texto = document.getElementById('filtroTexto').value.trim().toLowerCase();
+
+        const filtrados = reportesCache.filter(r => {
+            const pasaRol = rolFiltro === 'todos' || r.rol === rolFiltro;
+            const pasaTexto = !texto ||
+                (r.mensaje || '').toLowerCase().includes(texto) ||
+                (r.usuario || '').toLowerCase().includes(texto) ||
+                (r.area || '').toLowerCase().includes(texto);
+            return pasaRol && pasaTexto;
+        });
+
+        const lista = document.getElementById('listaReportes');
+
+        if (filtrados.length === 0) {
+            lista.innerHTML = `<div class="log-empty">No hay reportes con ese filtro.</div>`;
+            return;
+        }
+
+        lista.innerHTML = filtrados.map(r => {
+            const fecha = new Date(r.creado_en).toLocaleString('es-AR', {
+                day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+            });
+            const fotoHtml = r.foto_url ? `<br><a href="${r.foto_url}" target="_blank" style="color:#60a5fa;">Ver foto →</a>` : '';
+            return `<div class="log-item">
+                <span class="log-user">${r.usuario}</span>
+                <span class="status-muted"> · ${r.area || r.rol} · ${fecha}</span><br>
+                ${r.mensaje}${fotoHtml}
+            </div>`;
+        }).join('');
+    }
+
     async function mostrarPantallaReportes() {
         document.getElementById('contentArea').style.overflowY = 'auto';
+        const campoEstiloFiltro = "width:100%; background:#121417; border:1px solid #2a2f38; color:var(--text-main); border-radius:8px; padding:10px; margin-top:8px; font-size:0.9rem;";
         document.getElementById('contentArea').innerHTML = `
             <div class="card">
                 <button class="enviar-texto-btn" onclick="renderShell()">← Volver</button>
             </div>
             <div class="card">
                 <div class="card-title">Reportes</div>
+                <select id="filtroRol" style="${campoEstiloFiltro}" onchange="renderListaReportes()">
+                    <option value="todos">Todos los niveles</option>
+                    <option value="operativo">Operativo</option>
+                    <option value="supervision">Supervisión</option>
+                    <option value="direccion">Dirección</option>
+                </select>
+                <input type="text" id="filtroTexto" placeholder="Buscar por texto, persona o área..." style="${campoEstiloFiltro}" oninput="renderListaReportes()">
                 <div id="listaReportes"><div class="log-empty">Cargando...</div></div>
             </div>
         `;
@@ -1143,30 +1199,20 @@
             .in('rol', rolesPermitidos())
             .order('creado_en', { ascending: false });
 
-        const lista = document.getElementById('listaReportes');
-
         if (error) {
             console.error('Error cargando reportes:', error);
-            lista.innerHTML = `<div class="log-empty">No se pudo cargar: ${error.message}</div>`;
+            document.getElementById('listaReportes').innerHTML = `<div class="log-empty">No se pudo cargar: ${error.message}</div>`;
             return;
         }
 
-        if (!data || data.length === 0) {
-            lista.innerHTML = `<div class="log-empty">No hay reportes todavía.</div>`;
+        reportesCache = data || [];
+
+        if (reportesCache.length === 0) {
+            document.getElementById('listaReportes').innerHTML = `<div class="log-empty">No hay reportes todavía.</div>`;
             return;
         }
 
-        lista.innerHTML = data.map(r => {
-            const fecha = new Date(r.creado_en).toLocaleString('es-AR', {
-                day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
-            });
-            const fotoHtml = r.foto_url ? `<br><a href="${r.foto_url}" target="_blank" style="color:#60a5fa;">Ver foto →</a>` : '';
-            return `<div class="log-item">
-                <span class="log-user">${r.usuario}</span>
-                <span class="status-muted"> · ${r.area || r.rol} · ${fecha}</span><br>
-                ${r.mensaje}${fotoHtml}
-            </div>`;
-        }).join('');
+        renderListaReportes();
     }
 
     async function enviarTexto() {
@@ -1220,20 +1266,15 @@
                 document.getElementById('btnHint').innerText = "No detecté nada. Mantené presionado y hablá.";
                 return;
             }
-            if (usuarioActual.rol === 'operativo') {
-                // Operativo: el botón solo transcribe y reporta, siempre.
-                await guardarMensaje(texto);
-            } else {
-                // Supervisión/Dirección: le "habla" a Roque, y Roque decide si es
-                // un reporte para anotar o una pregunta para contestar.
-                await hablarConRoque(texto);
-            }
+            // Los 3 niveles: el botón le "habla" a Roque, y Roque decide si es
+            // un reporte para anotar o una pregunta para contestar.
+            await hablarConRoque(texto);
             ultimaTranscripcion = '';
         };
     }
 
     // ---- ROQUE DECIDE: ¿esto es un reporte para anotar, o una pregunta para contestar? ----
-    // Solo se usa para Supervisión/Dirección, que hablan con Roque en general (no solo reportan).
+    // Se usa para los 3 niveles (Operativo, Supervisión, Dirección).
     function esPregunta(texto) {
         const t = texto.toLowerCase().trim();
         if (t.endsWith('?')) return true;
