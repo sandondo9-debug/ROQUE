@@ -464,7 +464,7 @@
         <p><strong>Tus derechos:</strong> podés pedir la corrección o eliminación de tus datos personales al administrador de tu negocio o a ROQUE cuando quieras.</p>
     </div>
     <div id="politicasBox">
-        <input type="checkbox" id="aceptoPoliticas" onchange="actualizarBotonesLogin()">
+        <input type="checkbox" id="aceptoPoliticas" checked onchange="actualizarBotonesLogin()">
         <label for="aceptoPoliticas">Estoy de acuerdo con las <span onclick="togglePoliticas(event)" style="color:var(--accent-green-bright); text-decoration:underline; cursor:pointer;">políticas de uso y privacidad</span>.</label>
     </div>
 
@@ -712,7 +712,7 @@
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('loginEmail').value = '';
         document.getElementById('loginPassword').value = '';
-        document.getElementById('aceptoPoliticas').checked = false;
+        document.getElementById('aceptoPoliticas').checked = true;
         document.getElementById('headerActions').innerHTML = '';
         actualizarBotonesLogin();
     }
@@ -814,9 +814,9 @@
             fila2Botones = botonDatosNegocio;
             document.getElementById('headerActions').innerHTML = botonSalir;
         } else if (usuarioActual.rol === 'supervision') {
-            fila1Botones = botonSalir + botonHuella;
+            fila1Botones = botonHuella;
             fila2Botones = botonReportes;
-            document.getElementById('headerActions').innerHTML = '';
+            document.getElementById('headerActions').innerHTML = botonSalir;
         } else {
             fila1Botones = botonSalir;
             fila2Botones = botonHuella;
@@ -1572,6 +1572,7 @@
     }
 
     // Arranque: si ya había sesión abierta, entra directo (usando caché si existe). Si no, se queda en el login.
+    actualizarBotonesLogin();
     revisarSesionExistente();
 </script>
 
