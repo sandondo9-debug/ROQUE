@@ -1171,6 +1171,7 @@
             <div class="card">
                 <button class="enviar-texto-btn" onclick="mostrarPantallaUsuarios()">Usuarios ${chevronRight}</button>
                 <button class="enviar-texto-btn" onclick="mostrarPantallaEmpleados()" style="margin-top:8px;">Nuevo Usuario ${chevronRight}</button>
+                <button class="enviar-texto-btn" onclick="mostrarPantallaPOS()" style="margin-top:8px;">Conectar POS ${chevronRight}</button>
             </div>
             <div class="card">
                 <div class="card-title">Datos del negocio</div>
@@ -1240,6 +1241,137 @@
 
         statusBox.className = 'status-msg status-ok';
         statusBox.textContent = '✓ Datos guardados';
+    }
+
+    // ---- CONEXIÓN CON EL POS (por ahora solo Fudo) ----
+    async function mostrarPantallaPOS() {
+        document.getElementById('contentArea').style.overflowY = 'auto';
+
+        document.getElementById('contentArea').innerHTML = `
+            <div class="card">
+                <div class="card-title">Conectar POS</div>
+                <div id="posStatusActual" class="status-msg status-muted">Cargando...</div>
+                <div id="posWizard"></div>
+                <button class="enviar-texto-btn" onclick="mostrarPantallaNegocio()" style="margin-top:8px;">${chevronLeft} Volver</button>
+            </div>
+        `;
+
+        const { data, error } = await supabaseClient
+            .from('bares')
+            .select('pos_proveedor, pos_conectado, pos_token_vence')
+            .eq('id', usuarioActual.bar_id)
+            .single();
+
+        if (error) {
+            console.error('Error cargando estado del POS:', error);
+            const estado = document.getElementById('posStatusActual');
+            estado.className = 'status-msg status-error';
+            estado.textContent = '✕ No se pudo cargar: ' + error.message;
+            return;
+        }
+
+        renderEstadoPOS(data);
+    }
+
+    function renderEstadoPOS(datosBar) {
+        const estado = document.getElementById('posStatusActual');
+
+        if (datosBar.pos_conectado && datosBar.pos_proveedor === 'fudo') {
+            const vence = datosBar.pos_token_vence
+                ? new Date(datosBar.pos_token_vence).toLocaleDateString('es-AR')
+                : 'sin definir';
+            estado.className = 'status-msg status-ok';
+            estado.textContent = `✓ Conectado a Fudo (el token vence el ${vence})`;
+
+            document.getElementById('posWizard').innerHTML = `
+                <button class="enviar-texto-btn" onclick="mostrarFormularioPOS()" style="margin-top:12px;">Actualizar el token</button>
+                <button class="enviar-texto-btn" onclick="desconectarPOS()" style="margin-top:8px; background:transparent; color:var(--alert-red); border-color:var(--alert-red);">Desconectar</button>
+            `;
+            return;
+        }
+
+        estado.className = 'status-msg status-muted';
+        estado.textContent = 'Todavía no conectaste ningún POS.';
+        mostrarFormularioPOS();
+    }
+
+    function mostrarFormularioPOS() {
+        document.getElementById('posWizard').innerHTML = `
+            <div class="card-title" style="margin-top:14px;">Proveedor</div>
+            <select id="posProveedor" style="width:100%; background:#121417; border:1px solid #2a2f38; color:var(--text-main); border-radius:8px; padding:10px; margin-top:8px; font-size:0.9rem;">
+                <option value="fudo">Fudo</option>
+                <option value="maxirest" disabled>Maxirest (próximamente)</option>
+            </select>
+
+            <div style="margin-top:14px; font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+                1. Escribile a soporte de Fudo y pedí que te activen la "API de propósito general".<br>
+                2. Una vez activada, entrá a <b>Administración &gt; Usuarios</b> dentro de Fudo.<br>
+                3. Elegí un usuario (mejor si creás uno solo para esto) y tocá <b>Establecer API Secret</b>.<br>
+                4. Copiá esa clave apenas aparezca — Fudo la muestra una sola vez.<br>
+                5. Pegala acá abajo y guardá.
+            </div>
+
+            <textarea id="posToken" placeholder="Pegá acá el API Secret de Fudo" style="min-height:70px;"></textarea>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Este token vence a los 10 días por defecto — vas a tener que volver a pegarlo cuando venza.</div>
+
+            <button class="enviar-texto-btn" onclick="guardarConexionPOS()" style="margin-top:10px;">Guardar conexión</button>
+            <div id="posFormStatus" class="status-msg status-muted" style="margin-top:10px; display:none;"></div>
+        `;
+    }
+
+    async function guardarConexionPOS() {
+        const statusBox = document.getElementById('posFormStatus');
+        const proveedor = document.getElementById('posProveedor').value;
+        const token = document.getElementById('posToken').value.trim();
+
+        if (!token) {
+            statusBox.style.display = 'block';
+            statusBox.className = 'status-msg status-error';
+            statusBox.textContent = 'Pegá el token antes de guardar.';
+            return;
+        }
+
+        const vence = new Date();
+        vence.setDate(vence.getDate() + 10);
+
+        const { error } = await supabaseClient
+            .from('bares')
+            .update({
+                pos_proveedor: proveedor,
+                pos_credenciales: { token: token },
+                pos_conectado: true,
+                pos_token_vence: vence.toISOString(),
+            })
+            .eq('id', usuarioActual.bar_id);
+
+        statusBox.style.display = 'block';
+        if (error) {
+            console.error('Error guardando conexión POS:', error);
+            statusBox.className = 'status-msg status-error';
+            statusBox.textContent = '✕ No se pudo guardar: ' + error.message;
+            return;
+        }
+
+        statusBox.className = 'status-msg status-ok';
+        statusBox.textContent = '✓ Guardado. Todavía no lo validamos contra Fudo real — eso lo sumamos en el próximo paso.';
+        setTimeout(mostrarPantallaPOS, 1400);
+    }
+
+    async function desconectarPOS() {
+        const { error } = await supabaseClient
+            .from('bares')
+            .update({
+                pos_conectado: false,
+                pos_credenciales: null,
+                pos_token_vence: null,
+            })
+            .eq('id', usuarioActual.bar_id);
+
+        if (error) {
+            console.error('Error desconectando POS:', error);
+            return;
+        }
+        mostrarPantallaPOS();
     }
 
     let reportesCache = [];
