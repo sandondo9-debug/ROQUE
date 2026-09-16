@@ -347,6 +347,18 @@
         }
         .lock-indicator.visible { display: flex; }
         .lock-indicator.locked { color: var(--accent-green-bright); border-color: var(--accent-green-bright); }
+        .lock-cancel-btn {
+            display: none;
+            margin-left: 6px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 1px solid #ef4444;
+            background: transparent;
+            color: #ef4444;
+            font-size: 0.68rem;
+            cursor: pointer;
+        }
+        .lock-indicator.locked .lock-cancel-btn { display: inline-block; }
 
         .btn-hint {
             font-size: 0.72rem;
@@ -503,6 +515,7 @@
         <div class="roque-btn-wrapper">
             <div class="lock-indicator" id="lockIndicator">
                 <span class="lock-text">↑ Deslizá para bloquear</span>
+                <button type="button" class="lock-cancel-btn" onclick="cancelarGrabacion()" aria-label="Cancelar grabación">✕ Cancelar</button>
             </div>
             <button class="roque-btn" id="roqueBtn" aria-label="Mantené presionado para hablar, deslizá hacia arriba para bloquear la grabación"
                 onpointerdown="onPointerDown(event)"
@@ -1526,6 +1539,12 @@
         };
 
         recognition.onend = async () => {
+            if (grabacionCancelada) {
+                grabacionCancelada = false;
+                ultimaTranscripcion = '';
+                document.getElementById('btnHint').innerText = "Grabación cancelada. Mantené presionado para hablar.";
+                return;
+            }
             const texto = ultimaTranscripcion.trim();
             if (!texto) {
                 document.getElementById('btnHint').innerText = "No detecté nada. Mantené presionado y hablá.";
@@ -1563,6 +1582,7 @@
     let dragging = false;
     let locked = false;
     let startY = 0;
+    let grabacionCancelada = false;
     const LOCK_THRESHOLD = 70;
 
     function actualizarColorBoton(grabando) {
@@ -1635,6 +1655,18 @@
         actualizarColorBoton(false);
         document.getElementById('roqueBtn').style.transform = 'scale(1)';
         document.getElementById('btnHint').innerText = "Procesando lo que dijiste...";
+        document.getElementById('lockIndicator').classList.remove('visible', 'locked');
+        recognition.stop();
+    }
+
+    // Descarta la grabación en curso (una vez bloqueada) sin enviar ningún reporte.
+    function cancelarGrabacion() {
+        if (!isTalking) return;
+        grabacionCancelada = true;
+        isTalking = false;
+        locked = false;
+        actualizarColorBoton(false);
+        document.getElementById('roqueBtn').style.transform = 'scale(1)';
         document.getElementById('lockIndicator').classList.remove('visible', 'locked');
         recognition.stop();
     }
