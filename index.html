@@ -60,8 +60,8 @@
             position: absolute;
             top: 12px;
             left: 14px;
-            width: 9.8px;
-            height: 9.8px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             background: var(--accent-green-bright);
             box-shadow: 0 0 6px rgba(0, 229, 160, 0.8);
@@ -772,10 +772,11 @@
     }
 
     function renderShell() {
+        registrarPantalla('renderShell');
 
         const cajaChat = `
             <div class="card" style="padding:11px 14px;">
-                <div class="card-title">Preguntale a Roque${MODO_SIMULACION ? ' <span class="badge badge-sim" style="margin-top:0; padding:1px 6px; vertical-align:middle;">Simulación</span>' : ''}</div>
+                <div class="card-title">Preguntale a Roque</div>
                 <textarea id="preguntaRoque" placeholder="Preguntá algo (ej: ¿hay alguna reserva para hoy?) o contale a Roque lo que querés reportar" aria-label="Pregunta o reporte para Roque"></textarea>
                 <button class="enviar-texto-btn" onclick="preguntarARoque()">Preguntar</button>
                 <div id="respuestaRoque" class="status-msg status-muted" style="margin-top:10px; display:none;" role="status"></div>
@@ -809,9 +810,15 @@
 
         // Distribución de botones según el nivel (fila 1 = junto al nombre, fila 2 = junto al perfil)
         let fila1Botones = '', fila2Botones = '';
+        let estiloFila1 = 'display:flex; align-items:center; gap:6px; justify-self:end;';
+        let estiloFila2 = 'justify-self:end;';
         if (usuarioActual.rol === 'direccion') {
+            // Reportes queda a la izquierda (alineado con "Datos del negocio", debajo),
+            // y la huella se va al extremo derecho de esa misma fila.
             fila1Botones = botonReportes + botonHuella;
             fila2Botones = botonDatosNegocio;
+            estiloFila1 = 'display:flex; align-items:center; justify-content:space-between; width:100%;';
+            estiloFila2 = 'justify-self:start;';
             document.getElementById('headerActions').innerHTML = botonSalir;
         } else if (usuarioActual.rol === 'supervision') {
             fila1Botones = botonHuella;
@@ -827,11 +834,11 @@
             <div class="card" style="padding:8.5px 14px;">
                 <div class="panel-header">
                     <div class="panel-nombre">${soloNombre(usuarioActual.nombre)}</div>
-                    <div class="panel-icons" style="display:flex; align-items:center; gap:6px; justify-self:end;">
+                    <div class="panel-icons" style="${estiloFila1}">
                         ${fila1Botones}
                     </div>
                     <div class="panel-label">${subtitulosPorRol[usuarioActual.rol]}</div>
-                    <div style="justify-self:end;">${fila2Botones}</div>
+                    <div style="${estiloFila2}">${fila2Botones}</div>
                 </div>
             </div>
             ${cajaChat}
@@ -952,6 +959,7 @@
     let usuariosCache = [];
 
     async function mostrarPantallaUsuarios() {
+        registrarPantalla('mostrarPantallaUsuarios');
         document.getElementById('contentArea').style.overflowY = 'auto';
         document.getElementById('contentArea').innerHTML = `
             <div class="card">
@@ -1085,6 +1093,7 @@
     }
 
     function mostrarPantallaEmpleados() {
+        registrarPantalla('mostrarPantallaEmpleados');
         document.getElementById('contentArea').style.overflowY = 'auto';
         const campoEstilo = "width:100%; background:#121417; border:1px solid #2a2f38; color:var(--text-main); border-radius:8px; padding:10px; margin-top:8px; font-size:0.9rem;";
         document.getElementById('contentArea').innerHTML = `
@@ -1164,6 +1173,7 @@
     }
 
     async function mostrarPantallaNegocio() {
+        registrarPantalla('mostrarPantallaNegocio');
         document.getElementById('contentArea').style.overflowY = 'auto';
         const campoEstilo = "width:100%; background:#121417; border:1px solid #2a2f38; color:var(--text-main); border-radius:8px; padding:10px; margin-top:8px; font-size:0.9rem;";
 
@@ -1245,6 +1255,7 @@
 
     // ---- CONEXIÓN CON EL POS (por ahora solo Fudo) ----
     async function mostrarPantallaPOS() {
+        registrarPantalla('mostrarPantallaPOS');
         document.getElementById('contentArea').style.overflowY = 'auto';
 
         document.getElementById('contentArea').innerHTML = `
@@ -1277,11 +1288,8 @@
         const estado = document.getElementById('posStatusActual');
 
         if (datosBar.pos_conectado && datosBar.pos_proveedor === 'fudo') {
-            const vence = datosBar.pos_token_vence
-                ? new Date(datosBar.pos_token_vence).toLocaleDateString('es-AR')
-                : 'sin definir';
             estado.className = 'status-msg status-ok';
-            estado.textContent = `✓ Conectado a Fudo (el token vence el ${vence})`;
+            estado.textContent = '✓ Conectado a Fudo';
 
             document.getElementById('posWizard').innerHTML = `
                 <button class="enviar-texto-btn" onclick="mostrarFormularioPOS()" style="margin-top:12px;">Actualizar el token</button>
@@ -1312,7 +1320,7 @@
             </div>
 
             <textarea id="posToken" placeholder="Pegá acá el API Secret de Fudo" style="min-height:70px;"></textarea>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Este token vence a los 10 días por defecto — vas a tener que volver a pegarlo cuando venza.</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Una vez conectado, no hace falta volver a pegar el token — se renueva solo.</div>
 
             <button class="enviar-texto-btn" onclick="guardarConexionPOS()" style="margin-top:10px;">Guardar conexión</button>
             <div id="posFormStatus" class="status-msg status-muted" style="margin-top:10px; display:none;"></div>
@@ -1429,6 +1437,7 @@
     }
 
     async function mostrarPantallaReportes() {
+        registrarPantalla('mostrarPantallaReportes');
         document.getElementById('contentArea').style.overflowY = 'auto';
         const campoEstiloFiltro = "width:100%; background:#121417; border:1px solid #2a2f38; color:var(--text-main); border-radius:8px; padding:10px; margin-top:8px; font-size:0.9rem;";
         document.getElementById('contentArea').innerHTML = `
@@ -1721,6 +1730,37 @@
         await guardarMensaje('(foto adjunta)', urlPublica.publicUrl);
         event.target.value = '';
     }
+
+    // ---- BOTÓN "ATRÁS" DEL CELULAR ----
+    // Sin esto, al no haber historial de navegación, el botón atrás del
+    // celular cierra la app directamente en vez de volver a la pantalla
+    // anterior. Cada vez que se cambia de pantalla dentro de la app se
+    // registra un paso en el historial del navegador; al usar el botón
+    // atrás, en vez de salir, se vuelve a dibujar la pantalla anterior.
+    let navegandoPorAtras = false;
+
+    function registrarPantalla(nombre) {
+        if (!navegandoPorAtras) {
+            history.pushState({ pantalla: nombre }, '', '#' + nombre);
+        }
+    }
+
+    const mapaPantallas = {
+        renderShell,
+        mostrarPantallaReportes,
+        mostrarPantallaNegocio,
+        mostrarPantallaUsuarios,
+        mostrarPantallaEmpleados,
+        mostrarPantallaPOS,
+    };
+
+    window.addEventListener('popstate', (evento) => {
+        const nombrePantalla = evento.state && evento.state.pantalla;
+        const funcion = mapaPantallas[nombrePantalla] || renderShell;
+        navegandoPorAtras = true;
+        funcion();
+        navegandoPorAtras = false;
+    });
 
     // Arranque: si ya había sesión abierta, entra directo (usando caché si existe). Si no, se queda en el login.
     revisarSesionExistente();
